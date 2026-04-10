@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --app-bg:#0e0e10;
+  --panel:#16161a;
+  --panel2:#1c1c22;
+  --border:#2a2a35;
+  --border2:#3a3a48;
+  --text:#e8e8f0;
+  --muted:#6b6b80;
+  --accent:#7c6fff;
+  --accent2:#a594ff;
+  --green:#4ade80;
+  --sans:'Instrument Sans',sans-serif;
+  --head:'Syne',sans-serif;
+}
+body{font-family:var(--sans);background:var(--app-bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:52px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;gap:1rem}
+.topbar-logo{font-family:var(--head);font-size:1rem;font-weight:700;color:var(--accent2);letter-spacing:-0.01em;white-space:nowrap}
+.topbar-logo span{color:var(--muted);font-weight:400}
+.topbar-tabs{display:flex;gap:2px;background:var(--panel2);padding:3px;border-radius:8px;flex-shrink:0}
+.tab-btn{padding:5px 14px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:var(--sans);font-size:0.78rem;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.tab-btn.active{background:var(--border2);color:var(--text)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;border:none;font-family:var(--sans);font-size:0.78rem;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff;font-weight:500}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-green{background:#166534;color:var(--green);border:1px solid #166534}
+.btn-green:hover{background:#14532d}
+
+/* MAIN LAYOUT */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR PANELS */
+.sidebar{width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-inner{flex:1;overflow-y:auto;padding:1rem}
+.sidebar-inner::-webkit-scrollbar{width:4px}
+.sidebar-inner::-webkit-scrollbar-track{background:transparent}
+.sidebar-inner::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ACCORDION SECTIONS */
+.acc-section{margin-bottom:6px}
+.acc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--panel2);transition:border-color 0.2s;user-select:none}
+.acc-header:hover{border-color:var(--border2)}
+.acc-header.open{border-color:var(--accent);border-bottom-left-radius:0;border-bottom-right-radius:0}
+.acc-title{font-family:var(--head);font-size:0.82rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.acc-icon{font-size:0.9rem}
+.acc-arrow{color:var(--muted);font-size:0.7rem;transition:transform 0.2s}
+.acc-header.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{display:none;border:1px solid var(--accent);border-top:none;border-bottom-left-radius:8px;border-bottom-right-radius:8px;padding:12px;background:var(--panel2);flex-direction:column;gap:10px}
+.acc-body.open{display:flex}
+
+/* FORM FIELDS */
+.field{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+.field-input{background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:0.85rem;padding:7px 10px;outline:none;transition:border-color 0.2s;width:100%}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--muted);opacity:0.6}
+textarea.field-input{resize:vertical;min-height:70px;line-height:1.5}
+select.field-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6b80'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.color-row{display:flex;align-items:center;gap:8px}
+.color-swatch{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0}
+.color-label{font-size:0.82rem;color:var(--muted);flex:1}
+
+/* THEME PRESETS */
+.presets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.preset{border-radius:8px;padding:8px 6px;border:2px solid transparent;cursor:pointer;text-align:center;font-size:0.7rem;font-weight:500;transition:all 0.2s;letter-spacing:0.02em}
+.preset.active{border-color:var(--accent)}
+
+/* REPEATABLE ITEMS (projects, skills, jobs) */
+.rep-list{display:flex;flex-direction:column;gap:6px}
+.rep-item{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:10px;position:relative}
+.rep-item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.rep-item-title{font-size:0.8rem;color:var(--text);font-weight:500}
+.rep-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:2px 5px;border-radius:4px;transition:color 0.2s}
+.rep-delete:hover{color:#f87171}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px dashed var(--border2);border-radius:7px;background:transparent;color:var(--muted);font-family:var(--sans);font-size:0.78rem;cursor:pointer;transition:all 0.2s;width:100%;margin-top:4px}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* PREVIEW */
+.preview-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#111}
+.preview-bar{display:flex;align-items:center;justify-content:space-between;padding:0 1rem;height:40px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
+.preview-bar-label{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
+.preview-bar-zoom{display:flex;gap:4px}
+.zoom-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:0.78rem;transition:all 0.2s}
+.zoom-btn:hover,.zoom-btn.active{color:var(--text);border-color:var(--border2)}
+.preview-frame-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem;background:repeating-linear-gradient(45deg,#0e0e10,#0e0e10 10px,#111216 10px,#111216 20px)}
+#preview-iframe{border:none;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transition:width 0.3s;background:#fff}
+
+/* LIVE BADGE */
+.live-badge{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--green);letter-spacing:0.06em}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* RIGHT PANEL (Theme settings) */
+.right-panel{width:260px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.right-panel .sidebar-inner{padding:1rem}
+.right-panel-header{padding:12px 1rem;border-bottom:1px solid var(--border);font-family:var(--head);font-size:0.78rem;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;flex-shrink:0}
+
+/* SECTION TOGGLE CHIPS */
+.section-chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:4px 10px;border-radius:20px;border:1px solid var(--border);font-size:0.72rem;color:var(--muted);cursor:pointer;transition:all 0.2s;user-select:none}
+.chip.on{border-color:var(--accent);color:var(--accent);background:rgba(124,111,255,0.1)}
+
+/* FONT SELECT */
+.font-option{padding:8px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all 0.2s;margin-bottom:4px}
+.font-option.active{border-color:var(--accent);background:rgba(124,111,255,0.08)}
+.font-option-name{font-size:0.82rem;color:var(--text)}
+.font-option-preview{font-size:1rem;color:var(--muted);margin-top:2px}
+
+/* SLIDER */
+.slider-wrap{display:flex;align-items:center;gap:10px}
+.range-slider{flex:1;accent-color:var(--accent)}
+.slider-val{font-size:0.78rem;color:var(--muted);min-width:28px;text-align:right}
+
+/* SCROLLBAR for hidden panels */
+.right-panel .sidebar-inner::-webkit-scrollbar{width:4px}
+.right-panel .sidebar-inner::-webkit-scrollbar-track{background:transparent}
+.right-panel .sidebar-inner::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+.section-head{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">Portfolio <span>Builder</span></div>
+  <div class="topbar-tabs">
+    <button class="tab-btn active" onclick="switchPanel('content',this)">Content</button>
+    <button class="tab-btn" onclick="switchPanel('theme',this)">Theme</button>
+    <button class="tab-btn" onclick="switchPanel('sections',this)">Sections</button>
+  </div>
+  <div class="topbar-actions">
+    <div class="live-badge"><div class="live-dot"></div>Live Preview</div>
+    <button class="btn btn-ghost" onclick="openPreview()">↗ Open</button>
+    <button class="btn btn-primary" onclick="exportHTML()">⬇ Export HTML</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-inner" id="sidebar-content">
+
+      <!-- HERO -->
+      <div class="acc-section">
+        <div class="acc-header open" onclick="toggleAcc(this)">
+          <span class="acc-title"><span class="acc-icon">👤</span>Hero / About</span>
+          <span class="acc-arrow">▾</span>
+        </div>
+        <div class="acc-body open">
+          <div class="field"><label class="field-label">Full Name</label><input class="field-input" id="f-name" value="Your Name" oninput="render()"></div>
+          <div class="field"><label class="field-label">Title / Tagline</label><input class="field-input" id="f-title" value="Designer · Developer · Creator" oninput="render()"></div>
+          <div class="field"><label class="field-label">Short Bio</label><textarea class="field-input" id="f-bio" oninput="render()">I craft thoughtful digital experiences that live at the intersection of design and technology. Passionate about solving real problems with elegant solutions.</textarea></div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">Location</label><input class="field-input" id="f-location" value="Hyderabad, India" oninput="render()"></div>
+            <div class="field"><label class="field-label">Status</label><input class="field-input" id="f-status" value="Open to work" oninput="render()"></div>
+          </div>
+          <div class="field"><label class="field-label">Profile Image URL</label><input class="field-input" id="f-avatar" placeholder="https://..." oninput="render()"></div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="acc-section">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-title"><span class="acc-icon">🗂</span>Projects</span>
+          <span class="acc-arrow">▾</span>
+        </div>
+        <div class="acc-body">
+          <div class="rep-list" id="projects-list"></div>
+          <button class="add-btn" onclick="addProject()">+ Add Project</button>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="acc-section">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-title"><span class="acc-icon">⚡</span>Skills</span>
+          <span class="acc-arrow">▾</span>
+        </div>
+        <div class="acc-body">
+          <div class="rep-list" id="skills-list"></div>
+          <button class="add-btn" onclick="addSkill()">+ Add Skill</button>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="acc-section">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-title"><span class="acc-icon">💼</span>Experience</span>
+          <span class="acc-arrow">▾</span>
+        </div>
+        <div class="acc-body">
+          <div class="rep-list" id="exp-list"></div>
+          <button class="add-btn" onclick="addExp()">+ Add Experience</button>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="acc-section">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <span class="acc-title"><span class="acc-icon">✉</span>Contact & Links</span>
+          <span class="acc-arrow">▾</span>
+        </div>
+        <div class="acc-body">
+          <div class="field"><label class="field-label">Email</label><input class="field-input" id="f-email" value="hello@yourname.com" oninput="render()"></div>
+          <div class="field"><label class="field-label">GitHub URL</label><input class="field-input" id="f-github" placeholder="https://github.com/..." oninput="render()"></div>
+          <div class="field"><label class="field-label">LinkedIn URL</label><input class="field-input" id="f-linkedin" placeholder="https://linkedin.com/in/..." oninput="render()"></div>
+          <div class="field"><label class="field-label">Twitter / X URL</label><input class="field-input" id="f-twitter" placeholder="https://twitter.com/..." oninput="render()"></div>
+          <div class="field"><label class="field-label">Resume / CV URL</label><input class="field-input" id="f-resume" placeholder="https://..." oninput="render()"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- THEME PANEL -->
+    <div class="sidebar-inner" id="sidebar-theme" style="display:none">
+      <p class="section-head">Theme Presets</p>
+      <div class="presets-grid" id="presets-grid"></div>
+
+      <p class="section-head" style="margin-top:14px">Colors</p>
+      <div class="field" style="margin-bottom:8px">
+        <label class="field-label">Accent Color</label>
+        <div class="color-row">
+          <input type="color" class="color-swatch" id="c-accent" value="#c8a96e" onchange="applyColor()">
+          <span class="color-label">Used for highlights & links</span>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label class="field-label">Background Color</label>
+        <div class="color-row">
+          <input type="color" class="color-swatch" id="c-bg" value="#0d0d0d" onchange="applyColor()">
+          <span class="color-label">Page background</span>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label class="field-label">Text Color</label>
+        <div class="color-row">
+          <input type="color" class="color-swatch" id="c-text" value="#f0ede8" onchange="applyColor()">
+          <span class="color-label">Main text</span>
+        </div>
+      </div>
+
+      <p class="section-head" style="margin-top:14px">Typography</p>
+      <div id="font-list"></div>
+
+      <p class="section-head" style="margin-top:14px">Layout</p>
+      <div class="field">
+        <label class="field-label">Border Radius</label>
+        <div class="slider-wrap">
+          <input type="range" class="range-slider" id="s-radius" min="0" max="24" value="4" oninput="updateSlider(this,'radius-val');render()">
+          <span class="slider-val" id="radius-val">4px</span>
+        </div>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label class="field-label">Section Spacing</label>
+        <div class="slider-wrap">
+          <input type="range" class="range-slider" id="s-spacing" min="40" max="120" value="70" oninput="updateSlider(this,'spacing-val','px');render()">
+          <span class="slider-val" id="spacing-val">70px</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTIONS PANEL -->
+    <div class="sidebar-inner" id="sidebar-sections" style="display:none">
+      <p class="section-head">Toggle Sections</p>
+      <div class="section-chips" id="section-chips"></div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:14px;line-height:1.6">Click a section to show or hide it in your portfolio. All enabled sections appear in order.</p>
+
+      <p class="section-head" style="margin-top:16px">Section Order</p>
+      <div id="section-order-list" style="display:flex;flex-direction:column;gap:4px"></div>
+      <p style="font-size:0.74rem;color:var(--muted);margin-top:8px">Drag to reorder — coming soon</p>
+    </div>
+  </div>
+
+  <!-- PREVIEW AREA -->
+  <div class="preview-area">
+    <div class="preview-bar">
+      <span class="preview-bar-label">Live Preview</span>
+      <div class="preview-bar-zoom">
+        <button class="zoom-btn" onclick="setWidth('100%',this)">Full</button>
+        <button class="zoom-btn" onclick="setWidth('768px',this)">Tablet</button>
+        <button class="zoom-btn active" onclick="setWidth('1100px',this)">Desktop</button>
+      </div>
+    </div>
+    <div class="preview-frame-wrap">
+      <iframe id="preview-iframe" style="width:1100px;min-height:600px"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let state = {
+  projects:[
+    {title:'Project Alpha',tag:'Web App',tech:'React, Node.js, PostgreSQL',desc:'A platform that streamlines workflows and enables teams to collaborate more effectively.',demo:'#',repo:'#'},
+    {title:'Project Beta',tag:'Open Source',tech:'Python, FastAPI, Docker',desc:'An open-source automation tool that saves hours of manual work. Used by hundreds of developers.',demo:'#',repo:'#'},
+    {title:'Project Gamma',tag:'Mobile App',tech:'Flutter, Firebase',desc:'A cross-platform app that helps users track goals and build better habits through great design.',demo:'#',repo:'#'},
+  ],
+  skills:[
+    {name:'JavaScript',pct:90},{name:'React / Next.js',pct:85},{name:'Python',pct:80},
+    {name:'UI / UX Design',pct:78},{name:'Node.js',pct:75},{name:'Git & DevOps',pct:82},
+  ],
+  experience:[
+    {role:'Senior Developer',company:'Awesome Corp',date:'2022 – Present',desc:'Led cross-functional teams to deliver high-impact products. Defined architecture, mentored juniors, improved delivery speed by 40%.'},
+    {role:'Frontend Engineer',company:'Startup Inc',date:'2020 – 2022',desc:'Built and shipped products used by thousands. Worked closely with design and product teams across multiple sprints.'},
+    {role:'Junior Developer',company:'First Company',date:'2018 – 2020',desc:'Started professional journey here, rapidly taking on increasing responsibility across multiple projects.'},
+  ],
+  colors:{accent:'#c8a96e',bg:'#0d0d0d',text:'#f0ede8'},
+  font:'DM Serif Display',
+  bodyFont:'DM Sans',
+  radius:4,
+  spacing:70,
+  sections:{hero:true,projects:true,skills:true,experience:true,contact:true},
+};
+
+const FONTS=[
+  {display:'DM Serif Display',body:'DM Sans',preview:'Elegant & Editorial'},
+  {display:'Playfair Display',body:'Source Sans 3',preview:'Classic & Refined'},
+  {display:'Syne',body:'Instrument Sans',preview:'Modern & Geometric'},
+  {display:'Cormorant Garamond',body:'Jost',preview:'Luxury & Minimal'},
+  {display:'Space Grotesk',body:'Inter',preview:'Tech & Clean'},
+  {display:'Fraunces',body:'Mulish',preview:'Warm & Humanist'},
+];
+
+const THEMES=[
+  {name:'Noir Gold',bg:'#0d0d0d',text:'#f0ede8',accent:'#c8a96e'},
+  {name:'Arctic',bg:'#f8fafc',text:'#0f172a',accent:'#0ea5e9'},
+  {name:'Forest',bg:'#0a1628',text:'#e2f0e8',accent:'#4ade80'},
+  {name:'Rose',bg:'#1a0a0a',text:'#fce8e8',accent:'#f472b6'},
+  {name:'Slate',bg:'#0f172a',text:'#e2e8f0',accent:'#818cf8'},
+  {name:'Sand',bg:'#faf6f0',text:'#2d1a00',accent:'#d97706'},
+];
+
+const SECTION_LABELS={hero:'Hero / About',projects:'Projects',skills:'Skills',experience:'Experience',contact:'Contact'};
+
+// ─── INIT ─────────────────────────────────────────────────
+window.onload=()=>{
+  buildProjectsList();buildSkillsList();buildExpList();
+  buildPresets();buildFonts();buildSectionChips();buildSectionOrder();
+  render();
+};
+
+// ─── ACCORDION ────────────────────────────────────────────
+function toggleAcc(h){
+  const b=h.nextElementSibling;
+  const isOpen=h.classList.contains('open');
+  h.classList.toggle('open',!isOpen);
+  b.classList.toggle('open',!isOpen);
+}
+
+// ─── PANEL SWITCH ─────────────────────────────────────────
+function switchPanel(p,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['content','theme','sections'].forEach(id=>{
+    const el=document.getElementById('sidebar-'+id);
+    if(el)el.style.display=id===p?'flex':'none';
+  });
+}
+
+// ─── PROJECTS ─────────────────────────────────────────────
+function buildProjectsList(){
+  const list=document.getElementById('projects-list');
+  list.innerHTML='';
+  state.projects.forEach((p,i)=>{
+    list.innerHTML+=`<div class="rep-item">
+      <div class="rep-item-head"><span class="rep-item-title">${p.title||'Project '+(i+1)}</span><button class="rep-delete" onclick="delProject(${i})">✕</button></div>
+      <div class="field"><input class="field-input" placeholder="Title" value="${p.title}" oninput="state.projects[${i}].title=this.value;render();this.closest('.rep-item').querySelector('.rep-item-title').textContent=this.value||'Project ${i+1}'"></div>
+      <div class="field-row">
+        <div class="field"><input class="field-input" placeholder="Tag" value="${p.tag}" oninput="state.projects[${i}].tag=this.value;render()"></div>
+        <div class="field"><input class="field-input" placeholder="Tech stack" value="${p.tech}" oninput="state.projects[${i}].tech=this.value;render()"></div>
+      </div>
+      <div class="field"><textarea class="field-input" placeholder="Description" oninput="state.projects[${i}].desc=this.value;render()">${p.desc}</textarea></div>
+      <div class="field-row">
+        <div class="field"><input class="field-input" placeholder="Demo URL" value="${p.demo}" oninput="state.projects[${i}].demo=this.value;render()"></div>
+        <div class="field"><input class="field-input" placeholder="Repo URL" value="${p.repo}" oninput="state.projects[${i}].repo=this.value;render()"></div>
+      </div>
+    </div>`;
+  });
+}
+function addProject(){state.projects.push({title:'New Project',tag:'Web',tech:'',desc:'',demo:'#',repo:'#'});buildProjectsList();render();}
+function delProject(i){state.projects.splice(i,1);buildProjectsList();render();}
+
+// ─── SKILLS ───────────────────────────────────────────────
+function buildSkillsList(){
+  const list=document.getElementById('skills-list');
+  list.innerHTML='';
+  state.skills.forEach((s,i)=>{
+    list.innerHTML+=`<div class="rep-item">
+      <div class="rep-item-head"><span class="rep-item-title">${s.name||'Skill '+(i+1)}</span><button class="rep-delete" onclick="delSkill(${i})">✕</button></div>
+      <div class="field-row">
+        <div class="field"><input class="field-input" placeholder="Skill name" value="${s.name}" oninput="state.skills[${i}].name=this.value;render();this.closest('.rep-item').querySelector('.rep-item-title').textContent=this.value||'Skill ${i+1}'"></div>
+        <div class="field"><input class="field-input" type="number" min="1" max="100" placeholder="%" value="${s.pct}" oninput="state.skills[${i}].pct=this.value;render()"></div>
+      </div>
+    </div>`;
+  });
+}
+function addSkill(){state.skills.push({name:'New Skill',pct:70});buildSkillsList();render();}
+function delSkill(i){state.skills.splice(i,1);buildSkillsList();render();}
+
+// ─── EXPERIENCE ───────────────────────────────────────────
+function buildExpList(){
+  const list=document.getElementById('exp-list');
+  list.innerHTML='';
+  state.experience.forEach((e,i)=>{
+    list.innerHTML+=`<div class="rep-item">
+      <div class="rep-item-head"><span class="rep-item-title">${e.role||'Role '+(i+1)}</span><button class="rep-delete" onclick="delExp(${i})">✕</button></div>
+      <div class="field-row">
+        <div class="field"><input class="field-input" placeholder="Role" value="${e.role}" oninput="state.experience[${i}].role=this.value;render();this.closest('.rep-item').querySelector('.rep-item-title').textContent=this.value||'Role ${i+1}'"></div>
+        <div class="field"><input class="field-input" placeholder="Company" value="${e.company}" oninput="state.experience[${i}].company=this.value;render()"></div>
+      </div>
+      <div class="field"><input class="field-input" placeholder="Date range" value="${e.date}" oninput="state.experience[${i}].date=this.value;render()"></div>
+      <div class="field"><textarea class="field-input" placeholder="Description" oninput="state.experience[${i}].desc=this.value;render()">${e.desc}</textarea></div>
+    </div>`;
+  });
+}
+function addExp(){state.experience.push({role:'New Role',company:'Company',date:'2024 – Present',desc:''});buildExpList();render();}
+function delExp(i){state.experience.splice(i,1);buildExpList();render();}
+
+// ─── PRESETS ──────────────────────────────────────────────
+function buildPresets(){
+  const g=document.getElementById('presets-grid');
+  g.innerHTML='';
+  THEMES.forEach((t,i)=>{
+    const el=document.createElement('div');
+    el.className='preset'+(i===0?' active':'');
+    el.style.background=t.bg;
+    el.style.color=t.text;
+    el.style.border=`2px solid ${i===0?t.accent:'transparent'}`;
+    el.textContent=t.name;
+    el.onclick=()=>{
+      state.colors={accent:t.accent,bg:t.bg,text:t.text};
+      document.getElementById('c-accent').value=t.accent;
+      document.getElementById('c-bg').value=t.bg;
+      document.getElementById('c-text').value=t.text;
+      document.querySelectorAll('.preset').forEach((p,j)=>{
+        p.style.border=j===i?`2px solid ${t.accent}`:'2px solid transparent';
+      });
+      render();
+    };
+    g.appendChild(el);
+  });
+}
+
+// ─── FONTS ────────────────────────────────────────────────
+function buildFonts(){
+  const list=document.getElementById('font-list');
+  list.innerHTML='';
+  FONTS.forEach((f,i)=>{
+    const el=document.createElement('div');
+    el.className='font-option'+(i===0?' active':'');
+    el.innerHTML=`<div class="font-option-name">${f.display}</div><div class="font-option-preview" style="font-family:'${f.display}',serif">${f.preview}</div>`;
+    el.onclick=()=>{
+      state.font=f.display;state.bodyFont=f.body;
+      document.querySelectorAll('.font-option').forEach((o,j)=>o.classList.toggle('active',j===i));
+      render();
+    };
+    list.appendChild(el);
+  });
+}
+
+// ─── SECTION CHIPS ────────────────────────────────────────
+function buildSectionChips(){
+  const c=document.getElementById('section-chips');
+  c.innerHTML='';
+  Object.keys(SECTION_LABELS).forEach(k=>{
+    const el=document.createElement('div');
+    el.className='chip'+(state.sections[k]?' on':'');
+    el.textContent=SECTION_LABELS[k];
+    el.onclick=()=>{state.sections[k]=!state.sections[k];el.classList.toggle('on',state.sections[k]);buildSectionOrder();render();};
+    c.appendChild(el);
+  });
+}
+function buildSectionOrder(){
+  const list=document.getElementById('section-order-list');
+  list.innerHTML='';
+  Object.keys(SECTION_LABELS).filter(k=>state.sections[k]).forEach(k=>{
+    list.innerHTML+=`<div style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;color:var(--text);display:flex;align-items:center;gap:8px"><span style="color:var(--muted)">⠿</span>${SECTION_LABELS[k]}</div>`;
+  });
+}
+
+// ─── SLIDERS ──────────────────────────────────────────────
+function updateSlider(el,id,suffix='px'){
+  document.getElementById(id).textContent=el.value+suffix;
+  state.radius=document.getElementById('s-radius').value;
+  state.spacing=document.getElementById('s-spacing').value;
+}
+
+// ─── COLORS ───────────────────────────────────────────────
+function applyColor(){
+  state.colors.accent=document.getElementById('c-accent').value;
+  state.colors.bg=document.getElementById('c-bg').value;
+  state.colors.text=document.getElementById('c-text').value;
+  render();
+}
+
+// ─── PREVIEW WIDTH ────────────────────────────────────────
+function setWidth(w,btn){
+  document.getElementById('preview-iframe').style.width=w;
+  document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function openPreview(){
+  const win=window.open();win.document.write(buildHTML());win.document.close();
+}
+
+// ─── RENDER ───────────────────────────────────────────────
+let renderTimer;
+function render(){
+  clearTimeout(renderTimer);
+  renderTimer=setTimeout(()=>{
+    const iframe=document.getElementById('preview-iframe');
+    const html=buildHTML();
+    iframe.srcdoc=html;
+  },60);
+}
+
+// ─── BUILD HTML ───────────────────────────────────────────
+function g(id){const el=document.getElementById(id);return el?el.value:'';}
+
+function buildHTML(){
+  const name=g('f-name')||'Your Name';
+  const title=g('f-title')||'';
+  const bio=g('f-bio')||'';
+  const location=g('f-location')||'';
+  const status=g('f-status')||'';
+  const avatar=g('f-avatar')||'';
+  const email=g('f-email')||'';
+  const github=g('f-github')||'';
+  const linkedin=g('f-linkedin')||'';
+  const twitter=g('f-twitter')||'';
+  const resume=g('f-resume')||'';
+  const {accent,bg,text}=state.colors;
+  const r=state.radius;
+  const sp=state.spacing;
+  const font=state.font;
+  const bodyFont=state.bodyFont;
+
+  // derive muted color
+  const isDark=isColorDark(bg);
+  const muted=isDark?mixColor(text,bg,0.45):mixColor(text,bg,0.4);
+  const cardBg=isDark?lighten(bg,10):darken(bg,4);
+  const borderC=isDark?lighten(bg,20):darken(bg,12);
+
+  function projectsHTML(){
+    if(!state.sections.projects||!state.projects.length)return'';
+    const cards=state.projects.map(p=>`
+      <div style="background:${cardBg};border:1px solid ${borderC};border-radius:${r*2}px;padding:1.75rem;position:relative;overflow:hidden">
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:${accent};border:1px solid ${accent}44;display:inline-block;padding:2px 10px;border-radius:${r}px;margin-bottom:1rem">${p.tag}</div>
+        <h3 style="font-family:'${font}',serif;font-size:1.35rem;font-weight:400;color:${text};margin-bottom:0.6rem">${p.title}</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0.85rem">${p.tech.split(',').map(t=>`<span style="font-size:0.68rem;background:${isDark?lighten(bg,18):darken(bg,8)};color:${muted};padding:2px 8px;border-radius:${r}px">${t.trim()}</span>`).join('')}</div>
+        <p style="font-size:0.87rem;color:${muted};margin-bottom:1.25rem;line-height:1.75">${p.desc}</p>
+        <div style="display:flex;gap:1rem">
+          ${p.demo&&p.demo!='#'?`<a href="${p.demo}" style="font-size:0.75rem;color:${accent};text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid ${accent}55;padding-bottom:2px">Live Demo →</a>`:''}
+          ${p.repo&&p.repo!='#'?`<a href="${p.repo}" style="font-size:0.75rem;color:${muted};text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid ${borderC};padding-bottom:2px">GitHub →</a>`:''}
+        </div>
+      </div>`).join('');
+    return`<section id="projects" style="padding:${sp}px 2rem;max-width:1060px;margin:0 auto">
+      <p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:${accent};margin-bottom:0.75rem">Projects</p>
+      <h2 style="font-family:'${font}',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;color:${text};margin-bottom:2.5rem;line-height:1.1">Selected Work</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px">${cards}</div>
+    </section>`;
+  }
+
+  function skillsHTML(){
+    if(!state.sections.skills||!state.skills.length)return'';
+    const items=state.skills.map(s=>`
+      <div style="margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:0.88rem;color:${text}">${s.name}</span>
+          <span style="font-size:0.75rem;color:${muted}">${s.pct}%</span>
+        </div>
+        <div style="height:2px;background:${borderC};border-radius:${r}px">
+          <div style="height:100%;width:${s.pct}%;background:${accent};border-radius:${r}px"></div>
+        </div>
+      </div>`).join('');
+    return`<section id="skills" style="padding:${sp}px 2rem;max-width:1060px;margin:0 auto;border-top:1px solid ${borderC}">
+      <p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:${accent};margin-bottom:0.75rem">Skills</p>
+      <h2 style="font-family:'${font}',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;color:${text};margin-bottom:2.5rem;line-height:1.1">Expertise</h2>
+      <div style="max-width:680px">${items}</div>
+    </section>`;
+  }
+
+  function expHTML(){
+    if(!state.sections.experience||!state.experience.length)return'';
+    const items=state.experience.map(e=>`
+      <div style="position:relative;padding-left:2rem;margin-bottom:3rem">
+        <div style="position:absolute;left:-0.5rem;top:0.35rem;width:9px;height:9px;border-radius:50%;background:${accent};border:2px solid ${bg}"></div>
+        <p style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:${accent};margin-bottom:0.3rem">${e.date}</p>
+        <h3 style="font-family:'${font}',serif;font-size:1.15rem;font-weight:400;color:${text};margin-bottom:0.15rem">${e.role}</h3>
+        <p style="font-size:0.83rem;color:${muted};margin-bottom:0.6rem">${e.company}</p>
+        <p style="font-size:0.87rem;color:${muted};line-height:1.75">${e.desc}</p>
+      </div>`).join('');
+    return`<section id="experience" style="padding:${sp}px 2rem;max-width:1060px;margin:0 auto;border-top:1px solid ${borderC}">
+      <p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:${accent};margin-bottom:0.75rem">Experience</p>
+      <h2 style="font-family:'${font}',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;color:${text};margin-bottom:2.5rem;line-height:1.1">Career Timeline</h2>
+      <div style="position:relative;padding-left:2rem;border-left:1px solid ${borderC}">${items}</div>
+    </section>`;
+  }
+
+  function contactHTML(){
+    if(!state.sections.contact)return'';
+    const links=[
+      email?`<a href="mailto:${email}" style="color:${muted};text-decoration:none;font-size:0.88rem;transition:color 0.2s">${email}</a>`:'',
+      github?`<a href="${github}" style="color:${muted};text-decoration:none;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;border:1px solid ${borderC};padding:5px 14px;border-radius:${r*2}px">GitHub</a>`:'',
+      linkedin?`<a href="${linkedin}" style="color:${muted};text-decoration:none;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;border:1px solid ${borderC};padding:5px 14px;border-radius:${r*2}px">LinkedIn</a>`:'',
+      twitter?`<a href="${twitter}" style="color:${muted};text-decoration:none;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;border:1px solid ${borderC};padding:5px 14px;border-radius:${r*2}px">Twitter</a>`:'',
+      resume?`<a href="${resume}" style="color:${accent};text-decoration:none;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;border:1px solid ${accent}55;padding:5px 14px;border-radius:${r*2}px">Download CV</a>`:'',
+    ].filter(Boolean).join('');
+    return`<section id="contact" style="padding:${sp}px 2rem;max-width:1060px;margin:0 auto;border-top:1px solid ${borderC}">
+      <p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:${accent};margin-bottom:0.75rem">Contact</p>
+      <h2 style="font-family:'${font}',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;color:${text};margin-bottom:1rem;line-height:1.1">Let's Work<br>Together</h2>
+      <p style="font-size:0.92rem;color:${muted};margin-bottom:2rem;max-width:480px">Have a project in mind or just want to say hello? Feel free to reach out.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">${links}</div>
+    </section>`;
+  }
+
+  const avatarEl=avatar
+    ?`<img src="${avatar}" alt="${name}" style="width:120px;height:120px;border-radius:${r*3}px;object-fit:cover;border:2px solid ${accent}44;flex-shrink:0">`
+    :`<div style="width:100px;height:100px;border-radius:${r*3}px;background:${cardBg};border:1px solid ${borderC};display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">${name.charAt(0)}</div>`;
+
+  const heroHTML=state.sections.hero?`
+  <section style="min-height:90vh;display:flex;flex-direction:column;justify-content:center;padding:${Math.max(sp,80)}px 2rem ${sp}px;max-width:1060px;margin:0 auto">
+    <div style="display:flex;gap:2.5rem;align-items:flex-start;flex-wrap:wrap">
+      ${avatarEl}
+      <div style="flex:1;min-width:260px">
+        ${status?`<p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:${accent};margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:${accent};display:inline-block"></span>${status}</p>`:''}
+        <h1 style="font-family:'${font}',serif;font-size:clamp(2.8rem,7vw,6rem);line-height:1;font-weight:400;margin-bottom:0.5rem;color:${text}">${name.split(' ').map((w,i)=>i%2===1?`<em style="font-style:italic;color:${accent}">${w}</em>`:w).join(' ')}</h1>
+        ${title?`<p style="font-size:clamp(0.9rem,2vw,1.2rem);color:${muted};margin-bottom:1.5rem;font-weight:300">${title}</p>`:''}
+        ${bio?`<p style="max-width:500px;color:${muted};font-size:0.93rem;line-height:1.8;margin-bottom:2rem">${bio}</p>`:''}
+        ${location?`<p style="font-size:0.8rem;color:${muted};display:flex;align-items:center;gap:5px">📍 ${location}</p>`:''}
+      </div>
+    </div>
+  </section>`:'';
+
+  const googleFonts=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:ital@0;1&family=${encodeURIComponent(bodyFont)}:wght@300;400;500&display=swap`;
+
+  return`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${name} — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="${googleFonts}" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'${bodyFont}',sans-serif;background:${bg};color:${text};font-weight:300;line-height:1.7}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 2rem;background:${bg}cc;backdrop-filter:blur(12px);border-bottom:1px solid ${borderC}}
+.nav-logo{font-family:'${font}',serif;font-size:1.2rem;color:${accent};text-decoration:none}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{color:${muted};text-decoration:none;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s}
+.nav-links a:hover{color:${accent}}
+footer{text-align:center;padding:2.5rem;border-top:1px solid ${borderC};font-size:0.78rem;color:${muted}}
+</style></head><body>
+<nav>
+  <a href="#" class="nav-logo">${name.split(' ')[0]}.</a>
+  <ul class="nav-links">
+    ${state.sections.projects?'<li><a href="#projects">Work</a></li>':''}
+    ${state.sections.skills?'<li><a href="#skills">Skills</a></li>':''}
+    ${state.sections.experience?'<li><a href="#experience">Experience</a></li>':''}
+    ${state.sections.contact?'<li><a href="#contact">Contact</a></li>':''}
+    ${resume?`<li><a href="${resume}">Resume</a></li>`:''}
+  </ul>
+</nav>
+${heroHTML}
+${projectsHTML()}
+${skillsHTML()}
+${expHTML()}
+${contactHTML()}
+<footer>© ${new Date().getFullYear()} ${name}. Built with Portfolio Builder.</footer>
+</body></html>`;
+}
+
+// ─── COLOR UTILS ──────────────────────────────────────────
+function isColorDark(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(r*299+g*587+b*114)/1000<128;
+}
+function hexToRgb(hex){return{r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)}}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('')}
+function lighten(hex,pct){const{r,g,b}=hexToRgb(hex);return rgbToHex(r+(255-r)*pct/100,g+(255-g)*pct/100,b+(255-b)*pct/100)}
+function darken(hex,pct){const{r,g,b}=hexToRgb(hex);return rgbToHex(r*(1-pct/100),g*(1-pct/100),b*(1-pct/100))}
+function mixColor(a,b,t){const c=hexToRgb(a),d=hexToRgb(b);return rgbToHex(c.r*(1-t)+d.r*t,c.g*(1-t)+d.g*t,c.b*(1-t)+d.b*t)}
+
+// ─── EXPORT ───────────────────────────────────────────────
+function exportHTML(){
+  const html=buildHTML();
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='index.html';
+  a.click();
+}
+</script>
+</body>
+</html>
